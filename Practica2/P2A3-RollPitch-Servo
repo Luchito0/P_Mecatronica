@@ -1,0 +1,40 @@
+#define X 14
+#define Y 12
+#define Z 13
+
+float Xval, Yval, Zval;
+float Xg,Yg,Zg;
+
+float X_min = 1547;
+float X_max = 2391;
+float Y_min = 1558;
+float Y_max = 2391;
+float Z_min = 1583;
+float Z_max = 2417;
+
+void setup() {
+  Serial.begin(115200);
+}
+
+void loop() {
+  Xval = analogRead(X);
+  Yval = analogRead(Y);
+  Zval = analogRead(Z);
+
+  Xg = map(Xval,X_min,X_max,100,-100);
+  Xg = Xg/100;
+  Yg = map(Yval,Y_min,Y_max,-100,100);
+  Yg = Yg/100;
+  Zg = map(Zval,Z_min,Z_max,-100,100);
+  Zg = Zg/100;
+
+  Serial.print("X: ");
+  Serial.print(Xg);
+  Serial.print(" Y: ");
+  Serial.print(Yg);
+  Serial.print(" Z: ");
+  Serial.println(Zg);
+
+  delay(50);
+  
+}
