@@ -1,0 +1,141 @@
+// Declaraciones de variables
+int obstaculoPin = 36;  // Pin del sensor de obstáculos
+int distanciaTrigPin = 32; // Pin Trig del HC-SR04
+int distanciaEchoPin = 34; // Pin Echo del HC-SR04
+int ledVerde1 = 23;   // Pin del LED verde 1
+int ledVerde2 = 22;   // Pin del LED verde 2
+int ledAmarillo1 = 21; // Pin del LED amarillo 1
+int ledAmarillo2 = 19; // Pin del LED amarillo 2
+int ledRojo1 = 18;    // Pin del LED rojo 1
+int ledRojo2 = 5;     // Pin del LED rojo 2
+
+int capacitivoPin1 = 15; 
+int capacitivoPin2 = 4;  // Pin del sensor capacitivo (Touch) para Rutina 2
+int capacitivoPin3 = 13; // Pin del sensor capacitivo (Touch) para Rutina 3
+
+int umbral1 = 100;
+int umbral2 = 200;
+int umbral3 = 300;
+
+int bandera1 = 0;
+int bandera2 = 0;
+int bandera3 = 0;
+
+float distancia;
+int luminosidad;
+
+void setup() {
+  // Configuración de pines
+  pinMode(obstaculoPin, INPUT);
+  pinMode(distanciaTrigPin, OUTPUT);
+  pinMode(distanciaEchoPin, INPUT);
+  pinMode(ledVerde1, OUTPUT);
+  pinMode(ledVerde2, OUTPUT);
+  pinMode(ledAmarillo1, OUTPUT);
+  pinMode(ledAmarillo2, OUTPUT);
+  pinMode(ledRojo1, OUTPUT);
+  pinMode(ledRojo2, OUTPUT);
+  pinMode(capacitivoPin1, INPUT);
+  pinMode(capacitivoPin2, INPUT);
+  pinMode(capacitivoPin3, INPUT);
+
+  // Configuración del sensor de obstáculos
+  digitalWrite(obstaculoPin, HIGH);
+  delay(5);
+  digitalWrite(obstaculoPin, LOW);
+
+  // Configuración del sensor ultrasónico
+  // Se genera un pulso de 10us en el pin Trig
+  digitalWrite(distanciaTrigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(distanciaTrigPin, LOW);
+
+  // Configuración del sensor de luminosidad
+  luminosidad = analogRead(A0);
+
+  // Inicialización de comunicación serial
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Lectura de los sensores capacitivos
+  int valor1 = digitalRead(capacitivoPin1);
+  int valor2 = digitalRead(capacitivoPin2);
+  int valor3 = digitalRead(capacitivoPin3);
+
+  // Actualización de las banderas
+  if (valor1 >= umbral1) {
+    bandera1 = 1;
+  } else {
+    bandera1 = 0;
+  }
+
+  if (valor2 >= umbral2) {
+    bandera2 = 1;
+  } else {
+    bandera2 = 0;
+  }
+
+  if (valor3 >= umbral3) {
+    bandera3 = 1;
+  } else {
+    bandera3 = 0;
+  }
+
+  // Rutina 1: Detección de obstáculos
+  if (bandera1 == 1) {
+    // Se activa la rutina 1
+    if (distancia <= 15) {
+      // Se encienden todos los LEDs
+      digitalWrite(ledVerde1, HIGH);
+      digitalWrite(ledVerde2, HIGH);
+      digitalWrite(ledAmarillo1, HIGH);
+      digitalWrite(ledAmarillo2, HIGH);
+      digitalWrite(ledRojo1, HIGH);
+      digitalWrite(ledRojo2, HIGH);
+    } else {
+      // Se apagan todos los LEDs
+      digitalWrite(ledVerde1, LOW);
+      digitalWrite(ledVerde2, LOW);
+      digitalWrite(ledAmarillo1, LOW);
+      digitalWrite(ledAmarillo2, LOW);
+      digitalWrite(ledRojo1, LOW);
+      digitalWrite(ledRojo2, LOW);
+    }
+  }
+
+  // Rutina 2: Sensor de distancia
+  if (bandera2 == 1) {
+    // Se activa la rutina 2
+    if (distancia <= 15) {
+      // Se encienden los LEDs verde y amarillo
+      digitalWrite(ledVerde1, HIGH);
+      digitalWrite(ledAmarillo1, HIGH);
+    } else {
+      // Se enciende el LED rojo
+      digitalWrite(ledRojo1, HIGH);
+    }
+  }
+
+  // Rutina 3: Sensor de luminosidad
+  if (bandera3 == 1) {
+    // Se activa la rutina 3
+    int porcentajeLuminosidad = map(luminosidad, 0, 1023, 0, 100);
+    Serial.print("Lum: ");
+    Serial.print(porcentajeLuminosidad);
+    Serial.println("%");
+    
+    int intensidadLEDs = map(porcentajeLuminosidad, 0, 100, 255, 0);
+    analogWrite(ledVerde2, intensidadLEDs);
+    analogWrite(ledAmarillo2, intensidadLEDs);
+    
+    if (porcentajeLuminosidad <= 10) {
+      // Se enciende el LED rojo
+      digitalWrite(ledRojo2, HIGH);
+    } else {
+      // Se apaga el LED rojo
+      digitalWrite(ledRojo2, LOW);
+    }
+  }
+
+}
