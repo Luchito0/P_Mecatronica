@@ -1,0 +1,73 @@
+#include "BluetoothSerial.h"
+
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
+
+BluetoothSerial SerialBT;
+
+const int LED1 = 21;
+const int LED2 = 5;
+const int LED3 = 4;
+
+char dato;
+
+void setup() {
+  Serial.begin(115200);
+  SerialBT.begin("Carlos"); //Bluetooth device name
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+}
+
+void loop() {
+  if (SerialBT.available()) {
+    dato = SerialBT.read();
+
+    switch (dato) {
+      case '1':
+        if (digitalRead(LED1) == HIGH) {
+          digitalWrite(LED1, LOW);
+          Serial.println("LED1 apagado");
+          SerialBT.println("LED1 off");
+        } else {
+          digitalWrite(LED1, HIGH);
+          Serial.println("LED1 encendido");
+          SerialBT.println("LED1 on");
+        }
+        break;
+      case '2':
+        if (digitalRead(LED2) == HIGH) {
+          digitalWrite(LED2, LOW);
+          Serial.println("LED2 apagado");
+          SerialBT.println("LED2 off");
+        } else {
+          digitalWrite(LED2, HIGH);
+          Serial.println("LED2 encendido");
+          SerialBT.println("LED2 on");
+        }
+        break;
+      case '3':
+        if (digitalRead(LED3) == HIGH) {
+          digitalWrite(LED3, LOW);
+          Serial.println("LED3 apagado");
+          SerialBT.println("LED3 off");
+        } else {
+          digitalWrite(LED3, HIGH);
+          Serial.println("LED3 encendido");
+          SerialBT.println("LED3 on");
+        }
+        break;
+      case '4':
+        digitalWrite(LED1, LOW);
+        digitalWrite(LED2, LOW);
+        digitalWrite(LED3, LOW);
+        Serial.println("Todos los LEDs apagados");
+        SerialBT.println("All LEDs off");
+        break;
+      default:
+        break;
+    }
+  }
+  delay(100);
+}
