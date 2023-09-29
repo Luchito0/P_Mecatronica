@@ -1,0 +1,67 @@
+#include <ESP32_Servo.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+#define servoPin 22
+#define XPin 18
+#define YPin 12
+#define ZPin 13
+#define I2C_ADDR 0x27
+
+Servo miservo;
+
+LiquidCrystal_I2C lcd(I2C_ADDR, 16, 2);
+
+float Xg, Yg, Zg;
+
+void setup() {
+  miservo.attach(servoPin);
+  lcd.init();
+  lcd.backlight();
+  Wire.begin(18, 22);
+  Serial.begin(115200);
+}
+
+void loop() {
+  // Leer valores del acelerómetro
+  int Xval = analogRead(XPin);
+  int Yval = analogRead(YPin);
+  int Zval = analogRead(ZPin);
+
+  // Calcular ángulo de Roll (alpha)
+  Xg = map(Xval, 0, 4095, -100, 100) / 100.0;
+  float alpha = atan2(Yg, Zg) * 180.0 / PI;
+
+  // Calcular ángulo de Pitch (beta)
+  Yg = map(Yval, 0, 4095, -100, 100) / 100.0;
+  float beta = atan2(-Xg, sqrt(Yg * Yg + Zg * Zg)) * 180.0 / PI;
+
+  // Asegurarse de que alpha esté en el rango -90° a 90°
+  if (alpha < -90) alpha = -90;
+  if (alpha > 90) alpha = 90;
+
+  // Mapear alpha al rango 0° a 180° para controlar el servo
+  int servoAngle = map(alpha, -90, 90, 0, 180);
+
+  // Imprimir valores en el monitor serial
+  Serial.print("Roll = ");
+  Serial.print(alpha);
+  Serial.print("° - Pitch = ");
+  Serial.print(beta);
+  Serial.println("°");
+
+  // Mover el servo al ángulo correspondiente
+  miservo.write(servoAngle);
+
+  // Mostrar información en la pantalla LCD
+  lcd.setCursor(0, 0);
+  lcd.print("Roll: ");
+  lcd.print(alpha);
+  lcd.print("°");
+  lcd.setCursor(0, 1);
+  lcd.print("Pitch: ");
+  lcd.print(beta);
+  lcd.print("°");
+
+  delay(100); // Pequeña pausa para estabilidad
+}
