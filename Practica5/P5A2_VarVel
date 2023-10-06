@@ -1,0 +1,68 @@
+#define EnM 13
+#define MA 12
+#define MB 14
+#define pot 27 // Pin analógico para el potenciómetro
+
+int channel = 0;
+int resolution = 12;
+int freq =0;
+
+void setup() {
+  pinMode(EnM, OUTPUT); // HABILITACIÓN
+  pinMode(MA, OUTPUT); // SENTIDO
+  pinMode(MB, OUTPUT);
+  
+  ledcSetup(channel, 1000, resolution); // Fijar una frecuencia de 1000 Hz 
+  ledcAttachPin(EnM, channel);
+
+  Serial.begin(115200);
+}
+
+void loop() {
+  int potValor = analogRead(pot); // Lee el valor del potenciómetro
+
+  // Convertir el valor leído a voltaje (mV)
+  float vol = (float)potValor * (3300.0 / 1023.0);
+
+  // Imprime el voltaje en el monitor serial
+  Serial.print("Voltaje: ");
+  Serial.print(vol / 1000.0, 2); // Muestra el voltaje en voltios con 2 decimales
+  Serial.print(" V --- ");
+
+  int speed = 0; //Con esta variable voy a mapear velocidad de 100% a 0%
+  // toma el valor leído del potenciómetro y lo mapea de su rango original de 0 a 1023
+  //a un nuevo rango de 100 a 0 o de 0 a 100 dependiendo el voltaje. Esto es para controlar la velocidad del motor
+
+  if (vol >= 0 && vol < 1320) { //pregunto si el voltaje va de 0 a 1320 mV
+    // Movimiento levógiro
+    speed = map(potValor, 0, 1023, 100, 0);
+    ledcWrite(channel, map(speed, 0, 100, 2000, 1000));  //ajusta la velocidad del motor según el valor de speed 
+    //y pongo la frecuencia PWM en el canal especificado para controlar la velocidad del motor en función de ese valor mapeado.
+    digitalWrite(MA, LOW);
+    digitalWrite(MB, HIGH);
+    Serial.print("Levógiro --- ");
+    Serial.print(speed);
+    Serial.println(" %");
+  } else if (vol >= 1320 && vol < 1980) {
+    // Detenido
+    ledcWrite(channel, 0);
+    digitalWrite(MA, HIGH);
+    digitalWrite(MB, LOW);
+    Serial.print("Detenido --- ");
+    Serial.println("0 %");
+  } else if (vol >= 1980 && vol <= 3300) {
+    // Movimiento dextrógiro
+    speed = map(potValor, 0, 1023, 0, 100);
+    ledcWrite(channel, map(speed, 0, 100, 1000, 2000));
+    digitalWrite(MA, HIGH);
+    digitalWrite(MB, LOW);
+    Serial.print("Dextrógiro --- ");
+    Serial.print(speed);
+    Serial.println(" %");
+  }
+
+  //Serial.print(speed);
+  //Serial.println(" %"); //imprimo el porcentaje de velocidad que va teniendo el motor 
+
+  delay(200); // Pequeño retardo
+}
