@@ -1,0 +1,55 @@
+#define EnM 13
+#define MA 12
+#define MB 14
+#define potPin 27 // Pin analógico para el potenciómetro
+
+int channel = 0;
+int resolution = 12;
+
+void setup() {
+  pinMode(EnM, OUTPUT); // HABILITACIÓN
+  pinMode(MA, OUTPUT); // SENTIDO
+  pinMode(MB, OUTPUT);
+  
+  ledcSetup(channel, 1000, resolution); // Fijar una frecuencia de 1000 Hz 
+  ledcAttachPin(EnM, channel);
+
+  Serial.begin(115200);
+}
+
+void loop() {
+  int potValor = analogRead(potPin); // Leer el valor del potenciómetro
+
+  // Convierte el valor leído a voltaje en milivoltios (mV)
+  float vol = (float)potValor * (3300.0 / 1023.0);
+
+  // Imrime el voltaje en el monitor serial
+  Serial.print("Voltaje del potenciómetro: ");
+  Serial.print(vol / 1000.0); // Mostrar el voltaje en V
+  Serial.println(" V");
+
+  // Mapear el valor leído del potenciómetro a acciones específicas
+  int mappedValue = map(potValor, 0, 1023, 0, 3300); // Mapear de 0-1023 a 0-3300 mV
+
+  if (mappedValue >= 0 && mappedValue < 1320) {
+    // Movimiento levógiro
+    ledcWrite(channel, 1000);
+    digitalWrite(MA, LOW);
+    digitalWrite(MB, HIGH);
+    Serial.println("Levógiro");
+  } else if (mappedValue >= 1320 && mappedValue < 1980) {
+    // Detenido
+    ledcWrite(channel, 0);
+    digitalWrite(MA, HIGH);
+    digitalWrite(MB, LOW);
+    Serial.println("Detenido");
+  } else if (mappedValue >= 1980 && mappedValue <= 3300) {
+    // Movimiento dextrógiro
+    ledcWrite(channel, 1000);
+    digitalWrite(MA, HIGH);
+    digitalWrite(MB, LOW);
+    Serial.println("Dextrógiro");
+  }
+
+  delay(200); // 
+}
