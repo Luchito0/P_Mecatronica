@@ -1,0 +1,79 @@
+// Pines de los LEDs
+#define Led1 4
+#define Led2 2
+#define Led3 15
+
+// Pines de los botones
+#define Boton1 22
+#define Boton2 23
+
+// Factor que multiplica el tiempo
+int factor = 1;
+
+// Tiempo de espera entre cada encendido y apagado
+int tiempo = 20;
+
+// Interrupción del botón 1
+void IRAM_ATTR ISR1(){
+  factor++;
+}
+
+// Interrupción del botón 2
+void IRAM_ATTR ISR2(){
+  factor--;
+  if (factor < 1){
+    factor = 1;
+  }
+}
+
+void setup() {
+  // Configura los pines de los LEDs como salidas
+  pinMode(Led1, OUTPUT);
+  pinMode(Led2, OUTPUT);
+  pinMode(Led3, OUTPUT);
+
+  // Configura los pines de los botones como entradas
+  pinMode(Boton1, INPUT_PULLUP);
+  pinMode(Boton2, INPUT_PULLUP);
+
+  // Configura las interrupciones de los botones
+  attachInterrupt(digitalPinToInterrupt(Boton1),ISR1,RISING);
+  attachInterrupt(digitalPinToInterrupt(Boton2),ISR2,RISING);
+
+  // Inicializa el monitor serial
+  Serial.begin(115200);
+}
+
+void loop() {
+  // Enciende el LED 1
+  digitalWrite(Led1, HIGH);
+
+  // Espera el tiempo especificado
+  delay(factor*tiempo);
+
+  // Apaga el LED 1
+  digitalWrite(Led1, LOW);
+
+  // Enciende el LED 2
+  digitalWrite(Led2, HIGH);
+
+  // Espera el tiempo especificado
+  delay(factor*tiempo);
+
+  // Apaga el LED 2
+  digitalWrite(Led2, LOW);
+
+  // Enciende el LED 3
+  digitalWrite(Led3, HIGH);
+
+  // Espera el tiempo especificado
+  delay(factor*tiempo);
+
+  // Apaga el LED 3
+  digitalWrite(Led3, LOW);
+
+  // Imprime el valor de tiempo en el monitor serial
+  Serial.println("Tiempo entre cambios");
+  Serial.println(factor*tiempo);
+  Serial.println("ms");
+}
